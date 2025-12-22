@@ -2,7 +2,8 @@
 	"cSpell.language": "en",
 	"cSpell.words": [
 		"editorconfig",
-		"markdownlint"
+		"markdownlint",
+		"networkd"
 	],
 
 	"markdownlint.config": {
