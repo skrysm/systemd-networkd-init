@@ -164,6 +164,14 @@ check_service_is_active() {
     return 1  # The service is either not running or not enabled.
 }
 
+check_service_is_running() {
+    if systemctl is-active --quiet "$1"; then
+        return 0  # The service is running.
+    fi
+
+    return 1  # The service is not running.
+}
+
 # Check if a WiFi device is present on the system
 check_for_wifi_device() {
     if [ -d /sys/class/net ] && ls /sys/class/net/*/wireless &> /dev/null; then
@@ -260,6 +268,13 @@ if [ $WIFI_PRESENT ]; then
 
         # Re-establish WiFi link (before switching to systemd)
         echo "Connecting $WIFI_DEVICE to WiFi network $WIFI_SSID..."
+        echo
+
+        if check_service_is_running wpa_supplicant; then
+            echo "Stopping wpa_supplicant..."
+            echo
+            systemctl stop wpa_supplicant
+        fi
 
         # Make sure iwd is running and enabled.
         systemctl enable --now iwd
