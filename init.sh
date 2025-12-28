@@ -265,26 +265,6 @@ if [ $WIFI_PRESENT ]; then
 
         # Also install "iwd" if WiFi is used.
         ensure_iwd
-
-        # Re-establish WiFi link (before switching to systemd)
-        echo "Connecting $WIFI_DEVICE to WiFi network $WIFI_SSID..."
-        echo
-
-        if check_service_is_running wpa_supplicant; then
-            echo "Stopping wpa_supplicant..."
-            echo
-            systemctl stop wpa_supplicant
-        fi
-
-        # Make sure iwd is running and enabled.
-        systemctl enable --now iwd
-
-        # This is for debugging purposes.
-        iwctl station list
-
-        iwctl "--passphrase=$WIFI_PASSWORD" station $WIFI_DEVICE connect "$WIFI_SSID"
-
-        apt purge -y wpasupplicant
     else
         echo "WiFi configuration won't be changed"
         echo
@@ -337,3 +317,28 @@ apt purge -y ifupdown dhcpcd-base resolvconf netplan.io network-manager
 
 rm -rf /etc/netplan
 rm -rf /etc/NetworkManager
+
+if [ -n "$WIFI_DEVICE" ]; then
+    # Re-establish WiFi link (before switching to systemd)
+    echo "Connecting $WIFI_DEVICE to WiFi network $WIFI_SSID..."
+    echo
+
+    # NOTE: This breaks the network connection and possibly DNS, if done before configuring
+    #   systemd. So, it must be done after(!) systemd has been configured and especially after
+    #   systemd-resolved has been installed.
+    if check_service_is_running wpa_supplicant; then
+        echo "Stopping wpa_supplicant..."
+        echo
+        systemctl stop wpa_supplicant
+    fi
+
+    # Make sure iwd is running and enabled.
+    systemctl enable --now iwd
+
+    # This is for debugging purposes.
+    iwctl station list
+
+    iwctl "--passphrase=$WIFI_PASSWORD" station $WIFI_DEVICE connect "$WIFI_SSID"
+
+    apt purge -y wpasupplicant
+fi
