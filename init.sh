@@ -264,6 +264,9 @@ if [ $WIFI_PRESENT ]; then
         # Make sure iwd is running and enabled.
         systemctl enable --now iwd
 
+        # This is for debugging purposes.
+        iwctl station list
+
         iwctl "--passphrase=$WIFI_PASSWORD" station $WIFI_DEVICE connect "$WIFI_SSID"
 
         apt purge -y wpasupplicant
