@@ -189,6 +189,19 @@ check_service_is_running() {
     return 1  # The service is not running.
 }
 
+check_for_ethernet_device() {
+    if [ -d /sys/class/net ]; then
+        for iface in /sys/class/net/*/; do
+            iface_name=$(basename "$iface")
+            # Check for ethernet devices (eth* or en*)
+            if [[ "$iface_name" =~ ^(eth|en) ]]; then
+                return 0  # Ethernet device found
+            fi
+        done
+    fi
+    return 1  # No ethernet device found
+}
+
 # Check if a WiFi device is present on the system
 check_for_wifi_device() {
     if [ -d /sys/class/net ] && ls /sys/class/net/*/wireless &> /dev/null; then
@@ -242,7 +255,19 @@ WIFI_DEVICE=''
 if [ $WIFI_PRESENT ]; then
     echo "WiFi device detected"
 
-    if prompt_yes_no "Configure WiFi" "Do you want to enable and configure the WiFi connection?"; then
+    if check_for_ethernet_device; then
+        if prompt_yes_no "Configure WiFi" "Do you want to enable and configure the WiFi connection?"; then
+            CONFIGURE_WIFI=0
+        else
+            CONFIGURE_WIFI=1
+        fi
+    else
+        # Always configure WiFi if no ethernet is present (like on a Raspberry Pi Zero 2W)
+        CONFIGURE_WIFI=0
+    fi
+
+
+    if [ $CONFIGURE_WIFI ]; then
         # Necessary for determining WiFi network device names
         ensure_iw
 
