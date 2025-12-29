@@ -151,14 +151,27 @@ is_ssh_session() {
 
     # Check parent process tree for sshd (handles sudo -i case)
     local pid=$$
-    while [[ $pid -gt 1 ]]; do
-        local name=$(ps -o comm= -p "$pid" 2>/dev/null)
-        if [[ "$name" == "sshd" ]]; then
+    local depth=0
+    local max_depth=50
+
+    while [[ $pid -gt 1 && $depth -lt $max_depth ]]; do
+        if [[ ! -f "/proc/$pid/cmdline" ]]; then
+            break
+        fi
+
+        local cmdline=$(cat "/proc/$pid/cmdline" 2>/dev/null | tr '\0' ' ')
+        if [[ "$cmdline" == *"sshd"* ]]; then
             return 0
         fi
-        pid=$(ps -o ppid= -p "$pid" 2>/dev/null)
-        [[ -z "$pid" || "$pid" == "1" ]] && break
+
+        pid=$(awk '{print $4}' "/proc/$pid/stat" 2>/dev/null)
+        ((depth++))
     done
+
+    if [[ $depth -ge $max_depth ]]; then
+        print_error "UNEXPECTED: Maximum process tree depth exceeded while checking for SSH session."
+        exit 1
+    fi
 
     return 1
 }
