@@ -94,6 +94,14 @@ on_user_cancellation() {
     exit 255
 }
 
+show_message_box() {
+    local title="$1"
+    local message="$2"
+    local height="${3:-8}"  # Default to 8 if not provided
+
+    whiptail --msgbox "$message" $height 78 --title "$title"
+}
+
 # Prompt user for yes/no confirmation
 prompt_yes_no() {
     local title="$1"
@@ -176,26 +184,24 @@ is_ssh_session() {
     return 1
 }
 
-recommend_screen_over_ssh() {
+check_ssh_without_screen() {
     # Detect SSH session
     if ! is_ssh_session; then
-        return 0
+        return
     fi
 
     # Don't nag if already inside a multiplexer
-    [[ -n "${STY-}" || -n "${TMUX-}" ]] && return 0
+    if [[ -n "${STY-}" || -n "${TMUX-}" ]]; then
+        return
+    fi
 
     SSH_NOTE="
-You are in an SSH session but not inside a screen session. It's
-recommended to start a screen session to keep this script running if the
-connection drops.
-
-Do you still want to continue?
+You are in an SSH session but not inside a screen session. This script must be
+run in a screen session because the network connection is drop while this script
+runs - and this would otherwise kill the script.
 "
-
-    if ! prompt_yes_no 'SSH session detected' "$SSH_NOTE" 14; then
-        on_user_cancellation
-    fi
+    show_message_box 'SSH session detected' "$SSH_NOTE" 12
+    exit 1
 }
 
 check_service_installed() {
@@ -274,7 +280,8 @@ fi
 # Make sure whiptail is installed
 ensure_whiptail
 
-recommend_screen_over_ssh
+# Make sure where in a screen session if we're in an SSH session
+check_ssh_without_screen
 
 print_heading "Checking for WiFi devices..."
 check_for_wifi_device
