@@ -19,6 +19,10 @@ print_heading() {
     echo
 }
 
+print_error() {
+    echo -e "\033[31m$1\033[0m" >&2
+}
+
 ###########################################################################################
 #
 # Apt Functions
@@ -110,7 +114,7 @@ prompt_yes_no() {
             on_user_cancellation
             ;;
         *)
-            echo "ERROR: whiptail returned unexpected exit code: $?" >&2
+            print_error "UNEXPECTED: whiptail returned unexpected exit code: $?"
             exit 1
             ;;
     esac
@@ -209,15 +213,13 @@ get_wifi_devices() {
 #------------------------------------------------------------------------------------------
 
 if [[ "$(id -u)" -ne 0 ]]; then
-  echo "ERROR: This script must be run as root." >&2
-  echo
+  print_error "ERROR: This script must be run as root."
   exit 1
 fi
 
 # Check that systemd is available on the system.
 if ! check_service_installed 'systemd-networkd'; then
-    echo "UNEXPECTED ERROR: systemd is not available" >&2
-    echo
+    print_error "UNEXPECTED: systemd is not available" >&2
     exit 1
 fi
 
@@ -362,7 +364,7 @@ if [ -n "$WIFI_DEVICE" ]; then
     echo "Waiting for $WIFI_DEVICE to appear in iwd (timeout: ${WIFI_DEVICE_WAIT_SEC}s)..."
     while ! iwctl device $WIFI_DEVICE show >/dev/null 2>&1; do
         if (( SECONDS >= WIFI_DEVICE_DEADLINE )); then
-            echo "Timeout: $WIFI_DEVICE did not become available in iwd within ${WIFI_DEVICE_WAIT_SEC}s." >&2
+            print_error "ERROR: $WIFI_DEVICE did not become available in iwd within ${WIFI_DEVICE_WAIT_SEC}s."
             echo
 
             # Show list of available devices for debugging purposes.
