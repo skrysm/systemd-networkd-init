@@ -185,24 +185,30 @@ is_ssh_session() {
 }
 
 check_ssh_without_screen() {
+    print_heading "Checking for SSH and screen sessions..."
     # Detect SSH session
     if ! is_ssh_session; then
+        echo "Not an SSH session. Ok."
+        echo
         return
     fi
 
     # Don't nag if already inside a multiplexer
     if [[ -n "${STY-}" || -n "${TMUX-}" ]]; then
+        echo "Already in screen session. Ok."
+        echo
         return
     fi
 
-    SSH_NOTE="
+    print_error "
 You are in an SSH session but not inside a screen session.
 
 This script must be run in a screen session because the network connection
 will drop while this script runs - and this would otherwise kill the
 script.
+
+Recommended screen tool: byobu  (install via 'apt install byobu')
 "
-    show_message_box 'SSH session detected' "$SSH_NOTE" 12
     exit 1
 }
 
