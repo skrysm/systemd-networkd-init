@@ -207,7 +207,7 @@ This script must be run in a screen session because the network connection
 will drop while this script runs - and this would otherwise kill the
 script.
 
-Recommended screen tool: byobu  (install via 'apt install byobu')
+Recommended screen tool: byobu  (install via 'apt update && apt install --no-install-recommends byobu')
 "
     exit 1
 }
