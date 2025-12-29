@@ -3,6 +3,7 @@
 # General notes:
 #
 # * $(...) removes all trailing line breaks.
+# * $SECONDS is a special shell variable that contains the seconds since the shell has started.
 #
 
 set -euo pipefail
@@ -217,6 +218,7 @@ echo "Checking for WiFi devices..."
 check_for_wifi_device
 WIFI_PRESENT=$?
 
+
 #------------------------------------------------------------------------------------------
 # Do WiFi configuration (SSID, password)
 #------------------------------------------------------------------------------------------
@@ -274,8 +276,9 @@ else
     echo
 fi
 
+
 #------------------------------------------------------------------------------------------
-# Enable systemd networking
+# Switch to systemd networking
 #------------------------------------------------------------------------------------------
 
 # Write config to enable DHCP for all ethernet and wifi network interfaces.
@@ -318,6 +321,11 @@ apt purge -y ifupdown dhcpcd-base resolvconf netplan.io network-manager
 rm -rf /etc/netplan
 rm -rf /etc/NetworkManager
 
+
+#------------------------------------------------------------------------------------------
+# Switch to iwd for WiFi
+#------------------------------------------------------------------------------------------
+
 if [ -n "$WIFI_DEVICE" ]; then
     # Re-establish WiFi link (before switching to systemd)
     echo "Connecting $WIFI_DEVICE to WiFi network $WIFI_SSID..."
@@ -335,10 +343,26 @@ if [ -n "$WIFI_DEVICE" ]; then
     # Make sure iwd is running and enabled.
     systemctl enable --now iwd
 
-    # This is for debugging purposes.
-    iwctl station list
+    # Wait for WiFi device to become available (will not(!) be instantaneous after iwd is enabled).
+    WIFI_DEVICE_WAIT_SEC=120
+    WIFI_DEVICE_DEADLINE=$((SECONDS + WIFI_DEVICE_WAIT_SEC))
+    echo "Waiting for $WIFI_DEVICE to appear in iwd (timeout: ${WIFI_DEVICE_WAIT_SEC}s)..."
+    while ! iwctl device $WIFI_DEVICE show >/dev/null 2>&1; do
+        if (( SECONDS >= WIFI_DEVICE_DEADLINE )); then
+            echo "Timeout: $WIFI_DEVICE did not become available in iwd within ${WIFI_DEVICE_WAIT_SEC}s." >&2
+            echo
 
+            # Show list of available devices for debugging purposes.
+            iwctl station list
+
+            exit 1
+        fi
+        sleep 2
+    done
+
+    # Connect WiFi device to WiFi network
     iwctl "--passphrase=$WIFI_PASSWORD" station $WIFI_DEVICE connect "$WIFI_SSID"
 
+    # Remove wpa-supplicant
     apt purge -y wpasupplicant
 fi
