@@ -136,16 +136,38 @@ prompt_password() {
     whiptail --passwordbox "$message" $height 78 --title "$title" 3>&1 1>&2 2>&3 || on_user_cancellation
 }
 
+
 ###########################################################################################
 #
 # System Functions
 #
 ###########################################################################################
 
+is_ssh_session() {
+    # Check for SSH environment variables first (common case)
+    if [[ -n "${SSH_CONNECTION-}" || -n "${SSH_CLIENT-}" || -n "${SSH_TTY-}" ]]; then
+        return 0
+    fi
+
+    # Check parent process tree for sshd (handles sudo -i case)
+    local pid=$$
+    while [[ $pid -gt 1 ]]; do
+        local name=$(ps -o comm= -p "$pid" 2>/dev/null)
+        if [[ "$name" == "sshd" ]]; then
+            return 0
+        fi
+        pid=$(ps -o ppid= -p "$pid" 2>/dev/null)
+        [[ -z "$pid" || "$pid" == "1" ]] && break
+    done
+
+    return 1
+}
 
 recommend_screen_over_ssh() {
-    # Detect SSH session (covers most setups)
-    [[ -n "${SSH_CONNECTION-}" || -n "${SSH_CLIENT-}" || -n "${SSH_TTY-}" ]] || return 0
+    # Detect SSH session
+    if ! is_ssh_session; then
+        return 0
+    fi
 
     # Don't nag if already inside a multiplexer
     [[ -n "${STY-}" || -n "${TMUX-}" ]] && return 0
