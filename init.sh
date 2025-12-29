@@ -159,43 +159,31 @@ is_ssh_session() {
 
     # Check parent process tree for sshd (handles sudo -i case)
     local pid=$$
-    local depth=0
-    local max_depth=50
 
-    while [[ $pid -gt 1 && $depth -lt $max_depth ]]; do
-        if [[ ! -f "/proc/$pid/cmdline" ]]; then
-            break
-        fi
-
-        local cmdline=$(cat "/proc/$pid/cmdline" 2>/dev/null | tr '\0' ' ')
-        if [[ "$cmdline" == *"sshd"* ]]; then
+    while [[ $pid -gt 1 ]]; do
+        local name=$(ps -o comm= -p "$pid" 2>/dev/null | tr -d ' ')
+        if [[ "$name" == "sshd" ]]; then
             return 0
         fi
-
-        pid=$(awk '{print $4}' "/proc/$pid/stat" 2>/dev/null)
-        ((depth++))
+        pid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
+        [[ -z "$pid" || "$pid" == "1" ]] && break
     done
-
-    if [[ $depth -ge $max_depth ]]; then
-        print_error "UNEXPECTED: Maximum process tree depth exceeded while checking for SSH session."
-        exit 1
-    fi
 
     return 1
 }
 
 check_ssh_without_screen() {
     print_heading "Checking for SSH and screen sessions..."
-    # Detect SSH session
-    if ! is_ssh_session; then
-        echo "Not an SSH session. Ok."
+    # Don't nag if already inside a multiplexer
+    if [[ -n "${STY-}" || -n "${TMUX-}" ]]; then
+        echo "Already in screen session. Ok."
         echo
         return
     fi
 
-    # Don't nag if already inside a multiplexer
-    if [[ -n "${STY-}" || -n "${TMUX-}" ]]; then
-        echo "Already in screen session. Ok."
+    # Detect SSH session
+    if ! is_ssh_session; then
+        echo "Not an SSH session. Ok."
         echo
         return
     fi
