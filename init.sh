@@ -10,6 +10,17 @@ set -euo pipefail
 
 ###########################################################################################
 #
+# Output Functions
+#
+###########################################################################################
+
+print_heading() {
+    echo -e "\033[36m$1\033[0m"
+    echo
+}
+
+###########################################################################################
+#
 # Apt Functions
 #
 ###########################################################################################
@@ -29,6 +40,7 @@ ensure_apt_is_updated() {
 
     # Only run apt update if it hasn't been run in the last 24 hours
     if [ $time_diff -ge 86400 ]; then
+        print_heading "Running 'apt update'..."
         apt update
         echo "$current_time" > "$timestamp_file"
     fi
@@ -44,8 +56,8 @@ install_package() {
 
 ensure_package() {
     if ! command -v "$1" &> /dev/null; then
-        echo "$2 is not installed. Installing it..."
-        echo
+        print_heading "$2 is not installed. Installing it..."
+
         install_package $2
         echo
     fi
@@ -214,7 +226,7 @@ ensure_whiptail
 
 recommend_screen_over_ssh
 
-echo "Checking for WiFi devices..."
+print_heading "Checking for WiFi devices..."
 check_for_wifi_device
 WIFI_PRESENT=$?
 
@@ -296,8 +308,8 @@ EOF
 
 # Check if systemd-networkd is enabled.
 if ! check_service_is_active 'systemd-networkd'; then
-    echo "systemd-networkd is not enabled. Enabling it..."
-    echo
+    print_heading "systemd-networkd is not enabled. Enabling it..."
+
     systemctl enable --now systemd-networkd
     echo
 fi
@@ -305,16 +317,18 @@ fi
 # Check if systemd-resolved is installed and is enabled.
 # NOTE: This will take over DNS immediately. Meaning: No more package installation is possible after this.
 if ! check_service_installed 'systemd-resolved'; then
-    echo "systemd-resolved is not installed. Installing it..."
-    echo
+    print_heading "systemd-resolved is not installed. Installing it..."
+
     install_package systemd-resolved
     echo
 elif ! check_service_is_active 'systemd-resolved'; then
-    echo "systemd-resolved is not enabled. Enabling it..."
-    echo
+    print_heading "systemd-resolved is not enabled. Enabling it..."
+
     systemctl enable --now systemd-resolved
     echo
 fi
+
+print_heading "Removing other network configuration tools..."
 
 apt purge -y ifupdown dhcpcd-base resolvconf netplan.io network-manager
 
@@ -328,8 +342,7 @@ rm -rf /etc/NetworkManager
 
 if [ -n "$WIFI_DEVICE" ]; then
     # Re-establish WiFi link (before switching to systemd)
-    echo "Connecting $WIFI_DEVICE to WiFi network $WIFI_SSID..."
-    echo
+    print_heading "Connecting $WIFI_DEVICE to WiFi network $WIFI_SSID..."
 
     # NOTE: This breaks the network connection and possibly DNS, if done before configuring
     #   systemd. So, it must be done after(!) systemd has been configured and especially after
