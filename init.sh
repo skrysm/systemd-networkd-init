@@ -444,3 +444,6 @@ if [ -n "$WIFI_DEVICE" ]; then
     # Remove wpa-supplicant
     apt purge -y wpasupplicant
 fi
+
+# Let's do a reboot to make sure everything is clean.
+reboot
