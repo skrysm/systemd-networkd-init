@@ -196,9 +196,11 @@ check_ssh_without_screen() {
     fi
 
     SSH_NOTE="
-You are in an SSH session but not inside a screen session. This script must be
-run in a screen session because the network connection is drop while this script
-runs - and this would otherwise kill the script.
+You are in an SSH session but not inside a screen session.
+
+This script must be run in a screen session because the network connection
+will drop while this script runs - and this would otherwise kill the
+script.
 "
     show_message_box 'SSH session detected' "$SSH_NOTE" 12
     exit 1
