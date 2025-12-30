@@ -4,8 +4,10 @@
 		"byobu",
 		"cmdline",
 		"editorconfig",
+		"ipupdown",
 		"iwctl",
 		"markdownlint",
+		"netplan",
 		"networkd"
 	],
 
