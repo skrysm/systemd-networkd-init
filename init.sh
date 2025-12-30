@@ -14,12 +14,13 @@ set -u
 # Fail if any command in a pipeline fails (not just the last one)
 set -o pipefail
 
-# Print line at which the script failed, if it failed (due to "set -e").
-trap 'print_error "Script failed at line $LINENO"' ERR
-
 # Enable for debugging
 #set -x
 #PS4='+ ${BASH_SOURCE}:${LINENO}: '
+# Print line at which the script failed, if it failed (due to "set -e").
+# NOTE: There are a lot of issues when using $(...) with traps (i.e. they don't work as
+#   expected). That's why this isn't enabled by default.
+#trap 'print_error "Script failed at line $LINENO"' ERR
 
 # Configuration
 SCRIPT_NAME="$(basename "$0")"
