@@ -325,7 +325,7 @@ if check_for_wifi_device; then
     fi
 
 
-    if [ $CONFIGURE_WIFI ]; then
+    if [ $CONFIGURE_WIFI -eq 0 ]; then
         # Necessary for determining WiFi network device names
         ensure_iw
 
