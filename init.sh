@@ -378,6 +378,8 @@ fi
 # Switch to systemd networking
 #------------------------------------------------------------------------------------------
 
+print_title "Enabling and configuring systemd-networkd..."
+
 # Write config to enable DHCP for all ethernet and wifi network interfaces.
 SYSTEMD_DHCP_CONF_FILE=/etc/systemd/network/10-all-interfaces-dhcp.network
 echo "Writing systemd-networkd DHCP config to: $SYSTEMD_DHCP_CONF_FILE"
@@ -440,6 +442,8 @@ if [ -n "$WIFI_DEVICE" ]; then
     fi
 
     # Make sure iwd is running and enabled.
+    echo "Enabling iwd..."
+    echo
     systemctl enable --now iwd
 
     # Wait for WiFi device to become available (will not(!) be instantaneous after iwd is enabled).
@@ -459,10 +463,17 @@ if [ -n "$WIFI_DEVICE" ]; then
         sleep 2
     done
 
+    echo "$WIFI_DEVICE found"
+    echo
+
     # Connect WiFi device to WiFi network
+    echo "Connecting $WIFI_DEVICE to network '$WIFI_SSID'..."
+    echo
     iwctl "--passphrase=$WIFI_PASSWORD" station $WIFI_DEVICE connect "$WIFI_SSID"
 
     # Remove wpa-supplicant
+    echo "Removing wpa-supplicant..."
+    echo
     apt purge -y wpasupplicant
 fi
 
