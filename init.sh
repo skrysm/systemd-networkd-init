@@ -301,10 +301,6 @@ ensure_whiptail
 # Make sure where in a screen session if we're in an SSH session
 check_ssh_without_screen
 
-print_title "Checking for WiFi devices..."
-check_for_wifi_device
-WIFI_PRESENT=$?
-
 
 #------------------------------------------------------------------------------------------
 # Do WiFi configuration (SSID, password)
@@ -312,7 +308,8 @@ WIFI_PRESENT=$?
 
 WIFI_DEVICE=''
 
-if [ $WIFI_PRESENT ]; then
+print_title "Checking for WiFi devices..."
+if check_for_wifi_device; then
     echo "WiFi device detected"
 
     if check_for_ethernet_device; then
