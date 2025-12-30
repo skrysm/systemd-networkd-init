@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 #
 # General notes:
 #
@@ -6,22 +7,43 @@
 # * $SECONDS is a special shell variable that contains the seconds since the shell has started.
 #
 
-set -euo pipefail
+# Exit immediately if any command exits with non-zero status
+set -e
+# Exit if an undefined variable is used
+set -u
+# Fail if any command in a pipeline fails (not just the last one)
+set -o pipefail
 
-###########################################################################################
-#
-# Output Functions
-#
-###########################################################################################
+# Print line at which the script failed, if it failed (due to "set -e").
+trap 'print_error "Script failed at line $LINENO"' ERR
 
-print_heading() {
-    echo -e "\033[36m$1\033[0m"
+# Enable for debugging
+#set -x
+#PS4='+ ${BASH_SOURCE}:${LINENO}: '
+
+# Configuration
+SCRIPT_NAME="$(basename "$0")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Colors for output (optional)
+readonly RED='\033[0;31m'
+readonly YELLOW='\033[1;33m'
+readonly CYAN='\033[0;36m'
+readonly NC='\033[0m' # No Color
+
+print_error() {
+    echo -e "${RED}$*${NC}" >&2
+}
+
+print_warn() {
+    echo -e "${YELLOW}$*${NC}" >&2
+}
+
+print_title() {
+    echo -e "${CYAN}$*${NC}"
     echo
 }
 
-print_error() {
-    echo -e "\033[31m$1\033[0m" >&2
-}
 
 ###########################################################################################
 #
@@ -44,7 +66,7 @@ ensure_apt_is_updated() {
 
     # Only run apt update if it hasn't been run in the last 24 hours
     if [ $time_diff -ge 86400 ]; then
-        print_heading "Running 'apt update'..."
+        print_title "Running 'apt update'..."
         apt update
         echo "$current_time" > "$timestamp_file"
     fi
@@ -60,7 +82,7 @@ install_package() {
 
 ensure_package() {
     if ! command -v "$1" &> /dev/null; then
-        print_heading "$2 is not installed. Installing it..."
+        print_title "$2 is not installed. Installing it..."
 
         install_package $2
         echo
@@ -173,7 +195,7 @@ is_ssh_session() {
 }
 
 check_ssh_without_screen() {
-    print_heading "Checking for SSH and screen sessions..."
+    print_title "Checking for SSH and screen sessions..."
     # Don't nag if already inside a multiplexer
     if [[ -n "${STY-}" || -n "${TMUX-}" ]]; then
         echo "Already in screen session. Ok."
@@ -279,7 +301,7 @@ ensure_whiptail
 # Make sure where in a screen session if we're in an SSH session
 check_ssh_without_screen
 
-print_heading "Checking for WiFi devices..."
+print_title "Checking for WiFi devices..."
 check_for_wifi_device
 WIFI_PRESENT=$?
 
@@ -373,7 +395,7 @@ EOF
 
 # Check if systemd-networkd is enabled.
 if ! check_service_is_active 'systemd-networkd'; then
-    print_heading "systemd-networkd is not enabled. Enabling it..."
+    print_title "systemd-networkd is not enabled. Enabling it..."
 
     systemctl enable --now systemd-networkd
     echo
@@ -382,18 +404,18 @@ fi
 # Check if systemd-resolved is installed and is enabled.
 # NOTE: This will take over DNS immediately. Meaning: No more package installation is possible after this.
 if ! check_service_installed 'systemd-resolved'; then
-    print_heading "systemd-resolved is not installed. Installing it..."
+    print_title "systemd-resolved is not installed. Installing it..."
 
     install_package systemd-resolved
     echo
 elif ! check_service_is_active 'systemd-resolved'; then
-    print_heading "systemd-resolved is not enabled. Enabling it..."
+    print_title "systemd-resolved is not enabled. Enabling it..."
 
     systemctl enable --now systemd-resolved
     echo
 fi
 
-print_heading "Removing other network configuration tools..."
+print_title "Removing other network configuration tools..."
 
 apt purge -y ifupdown dhcpcd-base resolvconf netplan.io network-manager
 
@@ -407,7 +429,7 @@ rm -rf /etc/NetworkManager
 
 if [ -n "$WIFI_DEVICE" ]; then
     # Re-establish WiFi link (before switching to systemd)
-    print_heading "Connecting $WIFI_DEVICE to WiFi network $WIFI_SSID..."
+    print_title "Connecting $WIFI_DEVICE to WiFi network $WIFI_SSID..."
 
     # NOTE: This breaks the network connection and possibly DNS, if done before configuring
     #   systemd. So, it must be done after(!) systemd has been configured and especially after
