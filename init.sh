@@ -414,7 +414,8 @@ fi
 
 print_title "Removing other network configuration tools..."
 
-apt purge -y ifupdown dhcpcd-base resolvconf netplan.io network-manager
+# NOTE: We don't remove "dhcpcd-base" here because on Ubuntu this package is required for "initramfs-tools".
+apt purge -y ifupdown resolvconf netplan.io network-manager
 
 rm -rf /etc/netplan
 rm -rf /etc/NetworkManager
