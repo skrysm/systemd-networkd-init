@@ -1,14 +1,46 @@
 # Switch to systemd
 
-Switches Debian-based systems from ipupdown and NetworkManager to systemd-networkd. Also switches from wpa_supplicant to iwd, if WiFi is used by the system (mainly on Raspberry Pi systems).
+Switches Debian-based systems from **ipupdown** and **NetworkManager** to **systemd-networkd**. Also switches from **wpa_supplicant** to **iwd**, if WiFi is used by the system (mainly on Raspberry Pi systems).
 
-Also removes netplan (see below).
+Also removes **netplan** (see below).
+
+This script is intended for headless server systems, not for desktop systems.
+
+It's intended for these distros:
+
+* Debian
+* Ubuntu
+* Raspberry Pi OS
+
+See also: [Network Configuration for Debian, Ubuntu, Raspberry Pi OS](https://manski.net/articles/linux/network-config)
+
+## How to use
 
 **To execute (as root):**
 
 ```sh
+sudo -i
 curl -fsSL https://raw.githubusercontent.com/skrysm/systemd-networkd-init/main/init.sh | bash
 ```
+
+## Why this script?
+
+I personally find [network configuration on Debian-based server systems](https://manski.net/articles/linux/network-config) a mess. Each distro uses a different method:
+
+* Debian: ifupdown
+* Ubuntu: systemd-networkd with netplan
+* Raspberry Pi OS: NetworkManager with netplan
+
+This script unifies the network configuration as: **systemd-networkd *without* netplan** (and **iwd** for WiFi, if necessary)
+
+With this, the network configuration is always found in:
+
+* systemd-networkd: `/etc/systemd/network/`
+* iwd: `/var/lib/iwd/`
+
+## Why no NetworkManager
+
+Using *systemd-networkd* over *NetworkManager* is mainly opinionated (I needed to pick one). One thing I found is that NetworkManager seems to prefer UIs for configuration over configuration files - and I explicitly wanted configuration files.
 
 ## Why no netplan
 
