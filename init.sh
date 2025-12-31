@@ -132,8 +132,9 @@ prompt_yes_no() {
     local height="${3:-8}"  # Default to 8 if not provided
 
     whiptail --yesno "$message" $height 78 --title "$title"
+    local result=$?
 
-    case $? in
+    case $result in
         0)
             return 0  # Yes
             ;;
@@ -145,7 +146,7 @@ prompt_yes_no() {
             on_user_cancellation
             ;;
         *)
-            print_error "UNEXPECTED: whiptail returned unexpected exit code: $?"
+            print_error "UNEXPECTED: whiptail returned unexpected exit code: $result"
             exit 1
             ;;
     esac
