@@ -78,6 +78,7 @@ install_package() {
     ensure_apt_is_updated
 
     # Do installation
+    print_title "Installing package '$1'..."
     apt install -y --no-install-recommends $1
 }
 
@@ -212,16 +213,58 @@ check_ssh_without_screen() {
         return
     fi
 
-    print_error "
+    local TITLE="Run in Screen Session"
+    local BASE_MESSAGE="
 You are in an SSH session but not inside a screen session.
 
 This script must be run in a screen session because the network connection
 will drop while this script runs - and this would otherwise kill the
 script.
-
-Recommended screen tool: byobu  (install via 'apt update && apt install --no-install-recommends byobu')
 "
-    exit 1
+
+    if command -v "byobu" &>/dev/null; then
+        local MESSAGE="
+        $BASE_MESSAGE
+
+        Start byobu (screen) session?
+        "
+
+        if prompt_yes_no "$TITLE" "$MESSAGE"; then
+            # Start "byobu" and exit this script.
+            exec byobu
+        else
+            on_user_cancellation
+        fi
+    fi
+
+    if command -v "screen" &>/dev/null; then
+        local MESSAGE="
+        $BASE_MESSAGE
+
+        Start screen session?
+        "
+
+        if prompt_yes_no "$TITLE" "$MESSAGE"; then
+            # Start "screen" and exit this script.
+            exec screen
+        else
+            on_user_cancellation
+        fi
+    fi
+
+    local INSTALL_MESSAGE="
+    $BASE_MESSAGE
+
+    Install and start byobu (screen alternative)?
+    "
+
+    if prompt_yes_no "$TITLE" "$INSTALL_MESSAGE"; then
+        install_package byobu
+        # Start "byobu" and exit this script.
+        exec byobu
+    else
+        on_user_cancellation
+    fi
 }
 
 check_service_installed() {
