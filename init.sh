@@ -69,6 +69,7 @@ ensure_apt_is_updated() {
     if [ $time_diff -ge 86400 ]; then
         print_title "Running 'apt update'..."
         apt update
+        echo
         echo "$current_time" > "$timestamp_file"
     fi
 }
@@ -155,7 +156,7 @@ prompt_yes_no() {
 
 prompt_input() {
     local title="$1"
-    local message="$2"
+    local message="$(printf '%s' "$2" | sed -z 's/^\n*//;s/\n*$//')" # trim leading and trailing newlines
     local height="${3:-8}"  # Default to 8 if not provided
 
     whiptail --inputbox "$message" $height 78 --title "$title" 3>&1 1>&2 2>&3 || on_user_cancellation
@@ -229,7 +230,7 @@ script.
         Start byobu (screen) session?
         "
 
-        if prompt_yes_no "$TITLE" "$MESSAGE"; then
+        if prompt_yes_no "$TITLE" "$MESSAGE" 18; then
             # Start "byobu" and exit this script.
             exec byobu
         else
@@ -244,7 +245,7 @@ script.
         Start screen session?
         "
 
-        if prompt_yes_no "$TITLE" "$MESSAGE"; then
+        if prompt_yes_no "$TITLE" "$MESSAGE" 18; then
             # Start "screen" and exit this script.
             exec screen
         else
@@ -258,7 +259,7 @@ script.
     Install and start byobu (screen alternative)?
     "
 
-    if prompt_yes_no "$TITLE" "$INSTALL_MESSAGE"; then
+    if prompt_yes_no "$TITLE" "$INSTALL_MESSAGE" 18; then
         install_package byobu
         # Start "byobu" and exit this script.
         exec byobu
