@@ -225,10 +225,10 @@ script.
 
     if command -v "byobu" &>/dev/null; then
         local MESSAGE="
-        $BASE_MESSAGE
+$BASE_MESSAGE
 
-        Start byobu (screen) session?
-        "
+Start byobu (screen) session?
+"
 
         if prompt_yes_no "$TITLE" "$MESSAGE" 18; then
             # Start "byobu" and exit this script.
@@ -240,10 +240,10 @@ script.
 
     if command -v "screen" &>/dev/null; then
         local MESSAGE="
-        $BASE_MESSAGE
+$BASE_MESSAGE
 
-        Start screen session?
-        "
+Start screen session?
+"
 
         if prompt_yes_no "$TITLE" "$MESSAGE" 18; then
             # Start "screen" and exit this script.
@@ -254,10 +254,10 @@ script.
     fi
 
     local INSTALL_MESSAGE="
-    $BASE_MESSAGE
+$BASE_MESSAGE
 
-    Install and start byobu (screen alternative)?
-    "
+Install and start byobu (screen alternative)?
+"
 
     if prompt_yes_no "$TITLE" "$INSTALL_MESSAGE" 18; then
         install_package byobu
