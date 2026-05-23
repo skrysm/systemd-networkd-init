@@ -1,8 +1,11 @@
 # Switch to systemd
 
-Switches Debian-based systems from **ipupdown** and **NetworkManager** to **systemd-networkd**. Also switches from **wpa_supplicant** to **iwd**, if WiFi is used by the system (mainly on Raspberry Pi systems).
+This repo provides a script that:
 
-Also removes **netplan** (see below).
+* Switches Debian-based systems from **ipupdown** and **NetworkManager** to **systemd-networkd**.
+* Switches from **wpa_supplicant** to **iwd**, if WiFi is used by the system (mainly on Raspberry Pi systems).
+* Removes **netplan** (see below).
+* Enables **DHCP** for all network interfaces.
 
 This script is intended for headless server systems, not for desktop systems.
 
@@ -44,7 +47,7 @@ Using *systemd-networkd* over *NetworkManager* is mainly opinionated (I needed t
 
 ## Why no netplan
 
-My first thought was to use netplan on all systems (instead of forcing systemd-networkd) - but this didn't work because on Raspberry Pi OS 13 netplan and/or NetworkManager are ][heavily patched](https://www.raspberrypi.com/news/cloud-init-on-raspberry-pi-os/) so that any configuration under `/etc/netplan` is removed and replaced with a generated one every time netplan runs.
+My first thought was to use netplan on all systems (instead of forcing systemd-networkd) - but this didn't work because on Raspberry Pi OS 13 netplan and/or NetworkManager are [heavily patched](https://www.raspberrypi.com/news/cloud-init-on-raspberry-pi-os/) so that any configuration under `/etc/netplan` is removed and replaced with a generated one every time netplan runs.
 
 To goal of this repo is to have stable, human-readable and human-editable configuration files for network configuration - and this is no longer (easily) possible on Raspberry Pi OS 13.
 
