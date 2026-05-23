@@ -19,10 +19,12 @@ See also: [Network Configuration for Debian, Ubuntu, Raspberry Pi OS](https://ma
 
 ## How to use
 
-**To execute (as root):**
+**Execute with:**
 
 ```sh
 sudo -i
+apt install --no-install-recommends url byobu
+byobu
 curl -fsSL https://raw.githubusercontent.com/skrysm/systemd-networkd-init/main/init.sh | bash
 ```
 
