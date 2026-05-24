@@ -49,6 +49,22 @@ print_title() {
 
 ###########################################################################################
 #
+# Log all terminal output to a file as well.
+#
+###########################################################################################
+
+LOG_FILE="/var/log/systemd-networkd-init.log"
+mkdir -p "$(dirname "$LOG_FILE")"
+# shellcheck disable=SC2064
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+echo "=== systemd-networkd-init run started at $(date) ==="
+echo -e "Log file: ${GREEN}$LOG_FILE${NC}"
+echo
+
+
+###########################################################################################
+#
 # Apt Functions
 #
 ###########################################################################################
