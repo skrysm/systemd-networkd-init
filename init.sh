@@ -516,10 +516,10 @@ if [ -n "$WIFI_DEVICE" ]; then
     echo
     iwctl "--passphrase=$WIFI_PASSWORD" station $WIFI_DEVICE connect "$WIFI_SSID"
 
-    # Remove wpa-supplicant
-    echo "Removing wpa-supplicant..."
+    # Remove wpa-supplicant and wireless-tools
+    echo "Removing wpa-supplicant and wireless-tools..."
     echo
-    apt purge -y wpasupplicant
+    apt purge -y wpasupplicant wireless-tools
 fi
 
 # Let's do a reboot to make sure everything is clean.
