@@ -1,4 +1,4 @@
-# Switch to systemd
+﻿# Switch to systemd
 
 This repo provides a script that:
 
@@ -22,10 +22,13 @@ See also: [Network Configuration for Debian, Ubuntu, Raspberry Pi OS](https://ma
 **Execute with:**
 
 ```sh
-sudo -i
-apt install --no-install-recommends url byobu
-byobu
-curl -fsSL https://raw.githubusercontent.com/skrysm/systemd-networkd-init/main/init.sh | bash
+curl -fsSL https://raw.githubusercontent.com/skrysm/systemd-networkd-init/main/1-init.sh | bash
+```
+
+**Or with a non-main branch:**
+
+```sh
+export GIT_BRANCH=feature/branch; curl -fsSL "https://raw.githubusercontent.com/skrysm/systemd-networkd-init/${GIT_BRANCH}/1-init.sh" | bash
 ```
 
 ## Why this script?
