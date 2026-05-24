@@ -431,8 +431,10 @@ echo "Writing systemd-networkd DHCP config to: $SYSTEMD_DHCP_CONF_FILE"
 echo
 cat <<EOF > $SYSTEMD_DHCP_CONF_FILE
 [Match]
-Type=ether
-Type=wlan
+# NOTE: Don't use Type=ether or it will break Docker's container networking.
+Name=en*
+Name=eth*
+Name=wl*
 
 [Network]
 DHCP=yes
