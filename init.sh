@@ -28,6 +28,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Colors for output (optional)
 readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
 readonly YELLOW='\033[1;33m'
 readonly CYAN='\033[0;36m'
 readonly NC='\033[0m' # No Color
@@ -427,9 +428,9 @@ print_title "Enabling and configuring systemd-networkd..."
 
 # Write config to enable DHCP for all ethernet and wifi network interfaces.
 SYSTEMD_DHCP_CONF_FILE=/etc/systemd/network/10-all-interfaces-dhcp.network
-echo "Writing systemd-networkd DHCP config to: $SYSTEMD_DHCP_CONF_FILE"
+echo -e "Writing systemd-networkd DHCP config to: ${GREEN}$SYSTEMD_DHCP_CONF_FILE${NC}"
 echo
-cat <<EOF > $SYSTEMD_DHCP_CONF_FILE
+cat <<EOF > "$SYSTEMD_DHCP_CONF_FILE"
 [Match]
 # NOTE: Don't use Type=ether or it will break Docker's container networking.
 Name=en*
@@ -439,6 +440,10 @@ Name=wl*
 [Network]
 DHCP=yes
 EOF
+
+# For easier visibility, print the contents of the file to the terminal. Also indent for easier visibility.
+sed 's/^/    /' "$SYSTEMD_DHCP_CONF_FILE"
+echo
 
 # Check if systemd-networkd is enabled.
 if ! check_service_is_active 'systemd-networkd'; then
