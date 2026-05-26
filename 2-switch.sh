@@ -20,6 +20,13 @@ set -o pipefail
 #   expected). That's why this isn't enabled by default.
 #trap 'print_error "Script failed at line $LINENO"' ERR
 
+
+###########################################################################################
+#
+# Logging/Output
+#
+###########################################################################################
+
 # Colors for output (optional)
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'

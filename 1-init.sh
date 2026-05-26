@@ -7,7 +7,14 @@ set -u
 # Fail if any command in a pipeline fails (not just the last one)
 set -o pipefail
 
-# For testing purposes, GIT_BRANCH can be overwritten via.
+
+###########################################################################################
+#
+# Global Variables
+#
+###########################################################################################
+
+# For testing purposes, GIT_BRANCH can be overwritten via: export GIT_BRANCH=xxx
 GIT_BRANCH="${GIT_BRANCH:-main}"
 SCRIPT_URL="https://raw.githubusercontent.com/skrysm/systemd-networkd-init/${GIT_BRANCH}/2-switch.sh"
 
@@ -27,6 +34,13 @@ else
     exit 1
   fi
 fi
+
+
+###########################################################################################
+#
+# Logging/Output
+#
+###########################################################################################
 
 print_error() {
     echo -e "\033[0;31m$*\033[0m" >&2
@@ -198,6 +212,8 @@ fi
 # Make sure whiptail is installed
 ensure_whiptail
 
+# NOTE: This prompt is also a test ballon to check if whiptail is working (because on most systems the
+#   user won't see any prompt - as they're only used for WiFi configuration).
 if ! prompt_yes_no "Configure Network" "During network configuration any SSH connection may drop. Also the system will be rebooted at the end. Do you want to continue?"; then
     on_user_cancellation
 fi
