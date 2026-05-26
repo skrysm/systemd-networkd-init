@@ -42,16 +42,24 @@ fi
 #
 ###########################################################################################
 
+# Colors for output
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly CYAN='\033[0;36m'
+readonly DIM='\033[2m'
+readonly NC='\033[0m' # No Color
+
 print_error() {
-    echo -e "\033[0;31m$*\033[0m" >&2
+    echo -e "${RED}$*${NC}" >&2
 }
 
 print_warn() {
-    echo -e "\033[1;33m$*\033[0m" >&2
+    echo -e "${YELLOW}$*${NC}" >&2
 }
 
 print_title() {
-    echo -e "\033[0;36m$*\033[0m"
+    echo -e "${CYAN}$*${NC}"
     echo
 }
 
