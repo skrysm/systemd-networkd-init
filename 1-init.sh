@@ -49,26 +49,18 @@ print_title() {
 ###########################################################################################
 
 ensure_apt_is_updated() {
-    local timestamp_file="/run/apt-update-timestamp"
-    local current_time
-    current_time=$(date +%s)
-    local last_update=0
+    # This file makes sure we only run "apt update" once (i.e. don't run it unnecessarily often).
+    local apt_update_marker_file="/run/apt-update-marker"
 
-    if [ -f "$timestamp_file" ]; then
-        last_update=$(cat "$timestamp_file")
-    fi
-
-    local time_diff=$((current_time - last_update))
-    if [ $time_diff -ge 86400 ]; then
+    if [ ! -f "$apt_update_marker_file" ]; then
         print_title "Running 'apt update'..."
         ${SUDO} apt update
         echo
-        printf '%s\n' "$current_time" | ${SUDO} tee "$timestamp_file" >/dev/null
+        ${SUDO} touch "$apt_update_marker_file"
     fi
 }
 
 install_package() {
-    # Make sure apt is up-to-date
     ensure_apt_is_updated
 
     print_title "Installing package '$1'..."

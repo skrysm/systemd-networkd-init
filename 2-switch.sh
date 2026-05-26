@@ -48,8 +48,21 @@ print_title() {
 #
 ###########################################################################################
 
+ensure_apt_is_updated() {
+    # This file makes sure we only run "apt update" once (i.e. don't run it unnecessarily often).
+    local apt_update_marker_file="/run/apt-update-marker"
+
+    if [ ! -f "$apt_update_marker_file" ]; then
+        print_title "Running 'apt-get update'..."
+        ${SUDO} apt-get update
+        echo
+        ${SUDO} touch "$apt_update_marker_file"
+    fi
+}
+
 install_package() {
-    # Do installation
+    ensure_apt_is_updated
+
     print_title "Installing package '$1'..."
     apt-get install -y --no-install-recommends $1
 }
