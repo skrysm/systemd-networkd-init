@@ -70,13 +70,16 @@ print_title() {
 #
 ###########################################################################################
 
+# NOTE: For this script - since it's still interactive - we use "apt" instead of "apt-get" for better UX.
+APT_CMD="${SUDO} apt"
+
 ensure_apt_is_updated() {
     # This file makes sure we only run "apt update" once (i.e. don't run it unnecessarily often).
     local apt_update_marker_file="/run/apt-update-marker"
 
     if [ ! -f "$apt_update_marker_file" ]; then
         print_title "Running 'apt update'..."
-        ${SUDO} apt update
+        ${APT_CMD} update
         echo
         ${SUDO} touch "$apt_update_marker_file"
     fi
@@ -86,7 +89,7 @@ install_package() {
     ensure_apt_is_updated
 
     print_title "Installing package '$1'..."
-    ${SUDO} apt install -y --no-install-recommends "$1"
+    ${APT_CMD} install -y --no-install-recommends "$1"
 }
 
 ensure_package() {

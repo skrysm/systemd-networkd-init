@@ -55,15 +55,20 @@ print_title() {
 #
 ###########################################################################################
 
+# Since this script runs non-interactively, we use apt-get instead of apt here (as apt produces a warning about a non-stable output).
+# NOTE: "-o Dpkg::Use-Pty=0" disables "fancy" UI progress bars - which makes the resulting log file much easier to read.
+APT_CMD="apt-get -o Dpkg::Use-Pty=0"
+export DEBIAN_FRONTEND=noninteractive
+
 ensure_apt_is_updated() {
     # This file makes sure we only run "apt update" once (i.e. don't run it unnecessarily often).
     local apt_update_marker_file="/run/apt-update-marker"
 
     if [ ! -f "$apt_update_marker_file" ]; then
         print_title "Running 'apt-get update'..."
-        ${SUDO} apt-get update
+        ${APT_CMD} update
         echo
-        ${SUDO} touch "$apt_update_marker_file"
+        touch "$apt_update_marker_file"
     fi
 }
 
@@ -71,7 +76,7 @@ install_package() {
     ensure_apt_is_updated
 
     print_title "Installing package '$1'..."
-    apt-get install -y --no-install-recommends $1
+    ${APT_CMD} install -y --no-install-recommends $1
 }
 
 ensure_package() {
@@ -205,7 +210,7 @@ fi
 print_title "Removing other network configuration tools..."
 
 # NOTE: We don't remove "dhcpcd-base" here because on Ubuntu this package is required for "initramfs-tools".
-apt-get purge -y ifupdown resolvconf netplan.io network-manager
+${APT_CMD} purge -y ifupdown resolvconf netplan.io network-manager
 
 rm -rf /etc/netplan
 rm -rf /etc/NetworkManager
@@ -263,7 +268,7 @@ if [ -n "$WIFI_DEVICE" ]; then
     # Remove wpa-supplicant and wireless-tools
     echo "Removing wpa-supplicant and wireless-tools..."
     echo
-    apt-get purge -y wpasupplicant wireless-tools
+    ${APT_CMD} purge -y wpasupplicant wireless-tools
     echo
 else
     echo -e "${CYAN}${DIM}WiFi configuration skipped.${NC}"
